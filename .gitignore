@@ -1,0 +1,4 @@
+rmsinstaller
+*.exe
+*.syso
+*.old
