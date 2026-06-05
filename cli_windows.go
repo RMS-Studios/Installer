@@ -4,7 +4,11 @@ import (
 	"syscall"
 	"unsafe"
 )
-	
+
+func ParseDiscordNew(p, branch string, isFlatpak bool) *DiscordInstall {
+	return nil
+}
+
 func IsDoubleClickRun() bool {
 	kernel32 := syscall.NewLazyDLL("kernel32.dll")
 	lp := kernel32.NewProc("GetConsoleProcessList")
