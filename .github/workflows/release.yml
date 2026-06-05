@@ -9,20 +9,23 @@ on:
 env:
   FORCE_COLOR: true
 
+permissions:
+  contents: write
+
 jobs:
   build-linux:
     runs-on: ubuntu-20.04 # hopefully older glibc for better compatibility on systems like debian bullseye
 
     steps:
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
-          go-version: "1.20"
+          go-version: "1.22"
 
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.cache/go-build
@@ -32,7 +35,7 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Install Go dependencies
-        run: go get -v
+        run: go mod tidy
 
       - name: Build Cli
         run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -tags "static cli" -ldflags "-s -w -X 'rmsinstaller/buildinfo.InstallerGitHash=$(git rev-parse --short HEAD)' -X 'rmsinstaller/buildinfo.InstallerTag=${{ github.ref_name }}'" -o RMSInstallerCli-linux
@@ -42,7 +45,7 @@ jobs:
           chmod +x RMSInstallerCli-linux
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: RMSInstaller-linux
           path: |
@@ -54,9 +57,9 @@ jobs:
 
     steps:
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
-          go-version: "1.20"
+          go-version: "1.22"
 
       - id: go-cache-paths
         run: |
@@ -64,9 +67,9 @@ jobs:
           echo "go_mod=$(go env GOMODCACHE)" >> $GITHUB_ENV
 
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: |
             ~/Library/Caches/go-build
@@ -79,7 +82,7 @@ jobs:
         run: brew install pkg-config sdl2
 
       - name: Install Go dependencies
-        run: go get -v
+        run: go mod tidy
 
       - name: Build
         run: CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -v -tags static -ldflags "-s -w -X 'rmsinstaller/buildinfo.InstallerGitHash=$(git rev-parse --short HEAD)' -X 'rmsinstaller/buildinfo.InstallerTag=${{ github.ref_name }}'" -o RMSInstaller
@@ -98,7 +101,7 @@ jobs:
           zip -r RMSInstaller.MacOS.zip RMSInstaller.app
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: RMSInstaller-macos
           path: RMSInstaller.MacOS.zip
@@ -109,14 +112,14 @@ jobs:
 
     steps:
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
-          go-version: "1.20"
+          go-version: "1.22"
 
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: |
             ~\AppData\Local\go-build
@@ -140,7 +143,7 @@ jobs:
         run: |
           export GOROOT=/mingw64/lib/go
           export GOPATH=/mingw64
-          go get -v
+          go mod tidy
           go install github.com/tc-hib/go-winres@latest
 
       - name: Build Gui
@@ -159,7 +162,7 @@ jobs:
           CGO_ENABLED=0 GOOS=windows GOARCH=386 go build -v -tags "static cli" -ldflags "-s -w -extldflags=-static -X 'rmsinstaller/buildinfo.InstallerGitHash=$(git rev-parse --short HEAD)' -X 'rmsinstaller/buildinfo.InstallerTag=${{ github.ref_name }}'" -o RMSInstallerCli.exe
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: RMSInstaller-windows
           path: |
@@ -173,25 +176,25 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: RMSInstaller-linux
           path: linux
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: RMSInstaller-macos
           path: macos
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: RMSInstaller-windows
           path: windows
 
       - name: Create the release
-        uses: softprops/action-gh-release@1e07f4398721186383de40550babbdf2b84acfc5 # v1
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
